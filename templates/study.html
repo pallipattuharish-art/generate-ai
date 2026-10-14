@@ -1,0 +1,510 @@
+{% extends "base.html" %}
+
+{% block title %}Study Workspace — AI Study Assistant{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 1.25rem;">
+
+  <!-- Header -->
+  <div style="margin-bottom: 1.5rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem;">
+      AI Study Workspace ✏️
+    </h1>
+    <p style="color: var(--text-secondary);">
+      Upload your study materials, edit extracted notes, and generate summaries, Telugu explanations, flashcards, or mock exams.
+    </p>
+  </div>
+
+  <!-- Section 1: Notes Input & Document Upload -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+      <div class="card-title">
+        <span>📂 1. Source Notes &amp; Document Upload</span>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="loadSampleNotes()">
+          🧪 Load Sample CSE Notes
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="clearNotes()">
+          🗑️ Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Metadata Fields -->
+    <div class="grid-2" style="margin-bottom: 1.25rem;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="subjectInput">Subject / Course Name</label>
+        <input type="text" id="subjectInput" class="form-control" placeholder="e.g. Data Structures & Algorithms, Operating Systems, Physics">
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="topicInput">Topic / Chapter Title</label>
+        <input type="text" id="topicInput" class="form-control" placeholder="e.g. Binary Trees & Graph Traversal, Memory Management">
+      </div>
+    </div>
+
+    <!-- File Upload Drop Zone -->
+    <div style="margin-bottom: 1.25rem;">
+      <div class="upload-zone" id="dropZone">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">Drag &amp; drop your study document here, or click to browse</div>
+        <div class="upload-hint">Supported formats: <strong>PDF, DOCX, TXT, MD</strong> (Max 16 MB). Computer-readable text extracted securely.</div>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" style="display: none;">
+      </div>
+      <div id="uploadStatus" style="margin-top: 0.75rem; font-size: 0.9rem; display: none;"></div>
+    </div>
+
+    <!-- Editable Text Area -->
+    <div class="form-group" style="margin-bottom: 0.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+        <label class="form-label" for="notesInput" style="margin-bottom: 0;">
+          Study Notes Text (Extracted or Pasted — Editable)
+        </label>
+        <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 0.75rem;">
+          <span id="wordCount">0 words</span>
+          <span>&bull;</span>
+          <span id="charCount">0 chars</span>
+        </div>
+      </div>
+      <textarea id="notesInput" class="form-control" style="min-height: 180px; font-family: monospace; font-size: 0.9rem;" placeholder="Paste lecture notes, textbook excerpts, or uploaded document text here..."></textarea>
+    </div>
+  </div>
+
+  <!-- Tool Navigation Tabs -->
+  <div class="tabs-container" id="studyTabs">
+    <button class="tab-btn active" onclick="switchStudyTab('summarizer', this)">📄 Notes Summarizer</button>
+    <button class="tab-btn" onclick="switchStudyTab('explainer', this)">💡 Concept Explainer</button>
+    <button class="tab-btn" onclick="switchStudyTab('questions', this)">📝 Practice Questions</button>
+    <button class="tab-btn" onclick="switchStudyTab('flashcards', this)">🎴 Flashcards</button>
+    <button class="tab-btn" onclick="switchStudyTab('mocktest', this)">🎯 Timed Mock Exam</button>
+  </div>
+
+  <!-- TAB 1: Notes Summarizer -->
+  <div id="tab-summarizer" class="study-tab-content">
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📄 AI Notes Summarizer</span>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        Condense your notes into structured revision summaries, key definitions, formulas, and bulleted takeaways.
+      </p>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+          <label class="form-label" for="summaryLengthSelect">Summary Length</label>
+          <select id="summaryLengthSelect" class="form-control select-control">
+            <option value="short">Short (High-level &amp; Top 5 takeaways)</option>
+            <option value="medium" selected>Medium (Balanced Revision Pack)</option>
+            <option value="detailed">Detailed (In-depth Academic Breakdown)</option>
+          </select>
+        </div>
+
+        <button type="button" id="generateSummaryBtn" class="btn btn-primary">
+          ✨ Generate Summary
+        </button>
+      </div>
+
+      <!-- Demo Banner placeholder -->
+      <div id="summaryDemoBanner" class="disclaimer-banner" style="display: none; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+        <span>ℹ️ Demo Mode: Generated using representative academic sample data. Add <code>GEMINI_API_KEY</code> for live AI.</span>
+      </div>
+
+      <!-- Output Container -->
+      <div id="summaryResultContainer" style="display: none;">
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copySummary()">📋 Copy</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="downloadSummary()">💾 Download .txt</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="saveSummaryToLibrary()">📚 Save to Library</button>
+        </div>
+        <div id="summaryOutput" class="rendered-output"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Concept Explainer -->
+  <div id="tab-explainer" class="study-tab-content" style="display: none;">
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>💡 AI Concept Explainer</span>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        Get step-by-step explanations, analogies, common misconceptions, and self-test questions in English or Telugu.
+      </p>
+
+      <div class="grid-3" style="margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="conceptInput">Concept or Term to Explain</label>
+          <input type="text" id="conceptInput" class="form-control" placeholder="e.g. Asymptotic Notation, Normalization, Semaphore">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="explainLevelSelect">Audience Depth</label>
+          <select id="explainLevelSelect" class="form-control select-control">
+            <option value="beginner" selected>Beginner (Simple language &amp; analogies)</option>
+            <option value="intermediate">Intermediate (College / Standard Academic)</option>
+            <option value="advanced">Advanced (Rigorous technical &amp; engineering)</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="explainLanguageSelect">Language</label>
+          <select id="explainLanguageSelect" class="form-control select-control">
+            <option value="english" selected>English</option>
+            <option value="telugu">Telugu (తెలుగు)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <button type="button" id="explainConceptBtn" class="btn btn-primary">
+          💡 Explain Concept
+        </button>
+      </div>
+
+      <!-- Demo Banner placeholder -->
+      <div id="explanationDemoBanner" class="disclaimer-banner" style="display: none; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+        <span>ℹ️ Demo Mode: Generated using representative educational sample. Add <code>GEMINI_API_KEY</code> for live AI.</span>
+      </div>
+
+      <!-- Output Container -->
+      <div id="explanationResultContainer" style="display: none;">
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copyExplanation()">📋 Copy</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="downloadExplanation()">💾 Download .txt</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="saveExplanationToLibrary()">📚 Save to Library</button>
+        </div>
+        <div id="explanationOutput" class="rendered-output"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Practice Questions -->
+  <div id="tab-questions" class="study-tab-content" style="display: none;">
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📝 Practice Question Generator</span>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        Generate relevant examination questions from your notes with instant feedback and answer outlines.
+      </p>
+
+      <div class="grid-3" style="margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="questionTypeSelect">Question Type</label>
+          <select id="questionTypeSelect" class="form-control select-control">
+            <option value="mcq" selected>Multiple Choice (MCQ with rationale)</option>
+            <option value="short">Short Answer (with model answers)</option>
+            <option value="long">Long Essay (with outline &amp; rubric)</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="questionCountSelect">Number of Questions</label>
+          <select id="questionCountSelect" class="form-control select-control">
+            <option value="5" selected>5 Questions</option>
+            <option value="10">10 Questions</option>
+            <option value="20">20 Questions</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="questionDifficultySelect">Difficulty Level</label>
+          <select id="questionDifficultySelect" class="form-control select-control">
+            <option value="easy">Easy (Direct Recall)</option>
+            <option value="medium" selected>Medium (Conceptual Application)</option>
+            <option value="hard">Hard (Analytical &amp; Problem Solving)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <button type="button" id="generateQuestionsBtn" class="btn btn-primary">
+          📝 Generate Practice Questions
+        </button>
+      </div>
+
+      <!-- Demo Banner placeholder -->
+      <div id="practiceDemoBanner" class="disclaimer-banner" style="display: none; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+        <span>ℹ️ Demo Mode: Showing representative questions. Add <code>GEMINI_API_KEY</code> for live AI generation.</span>
+      </div>
+
+      <!-- Output Container -->
+      <div id="practiceQuestionsContainer" style="display: none;">
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1rem;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="savePracticeQuestionsToLibrary()">
+            📚 Save Question Set to Library
+          </button>
+        </div>
+        <div id="practiceQuestionsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Flashcards -->
+  <div id="tab-flashcards" class="study-tab-content" style="display: none;">
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>🎴 AI Revision Flashcards</span>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        Active recall cards generated from your notes. Click card or press <strong>Spacebar</strong> to flip.
+      </p>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 0; min-width: 180px;">
+          <label class="form-label" for="flashcardCountSelect">Target Card Count</label>
+          <select id="flashcardCountSelect" class="form-control select-control">
+            <option value="5">5 Flashcards</option>
+            <option value="10" selected>10 Flashcards</option>
+            <option value="15">15 Flashcards</option>
+            <option value="20">20 Flashcards</option>
+          </select>
+        </div>
+
+        <button type="button" id="generateFlashcardsBtn" class="btn btn-primary">
+          🎴 Generate Flashcards
+        </button>
+      </div>
+
+      <!-- Demo Banner placeholder -->
+      <div id="flashcardsDemoBanner" class="disclaimer-banner" style="display: none; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+        <span>ℹ️ Demo Mode: Showing representative flashcards deck. Add <code>GEMINI_API_KEY</code> for live AI.</span>
+      </div>
+
+      <!-- Interactive Flashcard Deck -->
+      <div id="flashcardContainer" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 620px; margin: 0 auto 0.5rem;">
+          <span id="cardProgressText" style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">Card 1 of 10</span>
+          <div style="display: flex; gap: 0.5rem; font-size: 0.85rem;">
+            <span id="knownCount" style="color: var(--success); font-weight: 600;">0 Known</span>
+            <span>&bull;</span>
+            <span id="reviewCount" style="color: var(--warning); font-weight: 600;">0 Review</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="width: 100%; max-width: 620px; height: 6px; background-color: var(--border-color); border-radius: var(--radius-full); margin: 0 auto 1.5rem; overflow: hidden;">
+          <div id="cardProgressBar" style="height: 100%; width: 10%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.3s ease;"></div>
+        </div>
+
+        <!-- 3D Card Scene -->
+        <div class="flashcard-scene" onclick="flipCard()">
+          <div class="flashcard-inner" id="flashcardInner">
+            <!-- Front -->
+            <div class="flashcard-face flashcard-front">
+              <span class="flashcard-tag" id="cardCategoryTag">Concept</span>
+              <div class="flashcard-content" id="cardFrontText">Front Question</div>
+              <div class="flashcard-hint">👆 Click or press Space to flip</div>
+            </div>
+            <!-- Back -->
+            <div class="flashcard-face flashcard-back">
+              <span class="flashcard-tag" style="color: var(--secondary); background: var(--secondary-light);">Explanation</span>
+              <div class="flashcard-content" id="cardBackText">Back Answer</div>
+              <div class="flashcard-hint">👆 Click to flip back</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="prevCardBtn" onclick="prevCard()">
+            ⬅️ Previous
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="shuffleCards()">
+            🔀 Shuffle
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" style="color: var(--warning);" onclick="markCardReview()">
+            🔄 Review Again
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" style="color: var(--success);" onclick="markCardKnown()">
+            ✅ Mark Known
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="nextCardBtn" onclick="nextCard()">
+            Next ➡️
+          </button>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="saveFlashcardsToLibrary()">
+            📚 Save Flashcard Deck to Library
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: Timed Mock Exam -->
+  <div id="tab-mocktest" class="study-tab-content" style="display: none;">
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>🎯 Timed Mock Exam Simulator</span>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        Take a real exam under pressure. Features live countdown timer, single-question pacing, automated scoring, and detailed answer explanations.
+      </p>
+
+      <div class="grid-3" style="margin-bottom: 1rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="mockQuestionCountSelect">Question Count</label>
+          <select id="mockQuestionCountSelect" class="form-control select-control">
+            <option value="5" selected>5 Questions</option>
+            <option value="10">10 Questions</option>
+            <option value="15">15 Questions</option>
+            <option value="20">20 Questions</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="mockDifficultySelect">Difficulty</label>
+          <select id="mockDifficultySelect" class="form-control select-control">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="mockTimerMinutesSelect">Timer Duration</label>
+          <select id="mockTimerMinutesSelect" class="form-control select-control">
+            <option value="5">5 Minutes</option>
+            <option value="10" selected>10 Minutes</option>
+            <option value="15">15 Minutes</option>
+            <option value="20">20 Minutes</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <button type="button" id="startMockTestBtn" class="btn btn-primary">
+          🎯 Launch Mock Exam
+        </button>
+      </div>
+
+      <!-- Demo Banner placeholder -->
+      <div id="mockTestDemoBanner" class="disclaimer-banner" style="display: none; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+        <span>ℹ️ Demo Mode: Showing representative mock test. Add <code>GEMINI_API_KEY</code> for live AI generation.</span>
+      </div>
+
+      <!-- Active Mock Exam Session Container -->
+      <div id="mockExamActiveContainer" style="display: none; margin-top: 1.5rem;">
+        
+        <!-- Active Exam Card -->
+        <div id="mockExamActiveCard" class="card" style="border: 2px solid var(--primary); padding: 0; overflow: hidden;">
+          <div class="quiz-header">
+            <div>
+              <span id="mockExamQuestionNumber" style="font-weight: 700; color: var(--primary);">Question 1 of 10</span>
+            </div>
+            <div class="timer-badge" id="examTimerDisplay">
+              ⏱️ 10:00
+            </div>
+          </div>
+
+          <div style="padding: 1.5rem;">
+            <!-- Question Tracker Dots -->
+            <div id="mockExamTracker" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1.25rem;"></div>
+
+            <div class="question-text" id="mockExamQuestionText">
+              Loading question...
+            </div>
+
+            <div class="options-list" id="mockExamOptionsList"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+              <button type="button" class="btn btn-secondary btn-sm" id="mockExamPrevBtn" onclick="mockExamPrev()">
+                ⬅️ Previous
+              </button>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-primary btn-sm" id="mockExamNextBtn" onclick="mockExamNext()">
+                  Next ➡️
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="mockExamSubmitBtn" style="display: none;" onclick="submitMockExam()">
+                  🏁 Submit Exam
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed Scoreboard Card -->
+        <div id="mockExamResultCard" class="card" style="display: none; border-top: 5px solid var(--success);">
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎓</div>
+            <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem;">Exam Completed!</h2>
+            <p style="color: var(--text-secondary);">Your result has been automatically recorded to your study dashboard.</p>
+          </div>
+
+          <div class="grid-3" style="text-align: center; margin-bottom: 2rem;">
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-sm);">
+              <div style="font-size: 0.85rem; color: var(--text-secondary);">Score</div>
+              <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary);" id="mockFinalScore">0 / 0</div>
+            </div>
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-sm);">
+              <div style="font-size: 0.85rem; color: var(--text-secondary);">Percentage</div>
+              <div style="font-size: 1.75rem; font-weight: 800; color: var(--success);" id="mockFinalPercentage">0%</div>
+            </div>
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-sm);">
+              <div style="font-size: 0.85rem; color: var(--text-secondary);">Time Taken</div>
+              <div style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary);" id="mockFinalTime">0m 0s</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">
+              🔍 Detailed Question &amp; Explanation Review
+            </h3>
+            <div id="mockExamReviewBreakdown"></div>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 1rem;">
+            <button type="button" class="btn btn-secondary" onclick="retryMockExam()">
+              🔄 Retake Exam
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+              📊 Back to Dashboard
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/study.js') }}"></script>
+<script src="{{ url_for('static', filename='js/flashcards.js') }}"></script>
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<script>
+function switchStudyTab(tabId, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".study-tab-content").forEach(c => c.style.display = "none");
+
+  btn.classList.add("active");
+  const target = document.getElementById("tab-" + tabId);
+  if (target) {
+    target.style.display = "block";
+  }
+}
+
+// Support hash-based direct linking (e.g. /study#mocktest)
+window.addEventListener("DOMContentLoaded", () => {
+  const hash = window.location.hash.replace("#", "");
+  if (hash) {
+    const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("onclick")?.includes(hash));
+    if (btn) btn.click();
+  }
+});
+</script>
+{% endblock %}

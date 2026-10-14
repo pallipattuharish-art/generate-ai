@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Study Materials — AI Study Assistant{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem;">
+        Saved Study Materials Library 📚
+      </h1>
+      <p style="color: var(--text-secondary);">
+        All your AI summaries, explanations, question sets, and flashcard decks stored locally in SQLite.
+      </p>
+    </div>
+    <a href="{{ url_for('study') }}" class="btn btn-primary">
+      Create New Materials ✏️
+    </a>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+    <div class="grid-2">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="librarySearchInput">Search by Title or Subject</label>
+        <input type="text" id="librarySearchInput" class="form-control" placeholder="Type keywords and press enter...">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="libraryTypeFilter">Filter by Material Type</label>
+        <select id="libraryTypeFilter" class="form-control select-control">
+          <option value="all">All Materials</option>
+          <option value="summary">Summaries</option>
+          <option value="explanation">Concept Explanations</option>
+          <option value="questions">Practice Questions</option>
+          <option value="flashcards">Flashcard Decks</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Materials List Container -->
+  <div id="materialsListContainer">
+    <div class="loading-overlay">
+      <div class="spinner spinner-primary" style="width: 32px; height: 32px;"></div>
+      <p>Loading your study library...</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Inspection Modal -->
+<div id="materialModal" class="modal-backdrop">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+      <div>
+        <h3 id="modalMaterialTitle" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem;"></h3>
+        <div id="modalMaterialMeta" style="font-size: 0.85rem; color: var(--text-secondary);"></div>
+      </div>
+      <button onclick="closeMaterialModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+
+    <!-- Modal Content Body -->
+    <div id="modalMaterialBody" style="margin-bottom: 1.5rem; max-height: 60vh; overflow-y: auto;"></div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+      <button type="button" class="btn btn-danger btn-sm" id="modalDeleteBtn">
+        🗑️ Delete Material
+      </button>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary btn-sm" id="modalCopyBtn">
+          📋 Copy Content
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeMaterialModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentModalItem = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchAndRenderMaterials();
+
+  const searchInput = document.getElementById("librarySearchInput");
+  const typeFilter = document.getElementById("libraryTypeFilter");
+
+  if (searchInput) {
+    let debounceTimer;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(fetchAndRenderMaterials, 300);
+    });
+  }
+
+  if (typeFilter) {
+    typeFilter.addEventListener("change", fetchAndRenderMaterials);
+  }
+});
+
+async function fetchAndRenderMaterials() {
+  const container = document.getElementById("materialsListContainer");
+  const search = encodeURIComponent(document.getElementById("librarySearchInput")?.value || "");
+  const type = encodeURIComponent(document.getElementById("libraryTypeFilter")?.value || "all");
+
+  try {
+    const res = await fetch(`/api/materials?search=${search}&type=${type}`);
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      container.innerHTML = `<p style="color: var(--danger);">Failed to load library items: ${escapeHtml(data.error)}</p>`;
+      return;
+    }
+
+    const items = data.materials || [];
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.75rem;">📚</div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No Study Materials Found</h3>
+          <p style="color: var(--text-secondary); max-width: 480px; margin: 0 auto 1.5rem;">
+            You have not saved any materials matching your criteria yet. Go to the Study Workspace to generate and save your first revision pack!
+          </p>
+          <a href="/study" class="btn btn-primary">Open Study Workspace 🚀</a>
+        </div>
+      `;
+      return;
+    }
+
+    const badgeIconMap = {
+      summary: "📄 Summary",
+      explanation: "💡 Explanation",
+      questions: "📝 Questions",
+      flashcards: "🎴 Flashcards"
+    };
+
+    container.innerHTML = `
+      <div class="grid-2">
+        ${items.map(item => `
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: var(--radius-full); background: var(--primary-light); color: var(--primary);">
+                  ${badgeIconMap[item.material_type] || item.material_type}
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${item.created_at}</span>
+              </div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem;">${escapeHtml(item.title)}</h3>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                Subject: <strong>${escapeHtml(item.subject)}</strong>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4;">
+                ${escapeHtml(item.source_snippet || "Click to inspect saved study material content...")}
+              </p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+              <button class="btn btn-secondary btn-sm" onclick="openMaterialModal(${item.id})">
+                👁️ View Details
+              </button>
+              <button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger);" onclick="deleteItem(${item.id})">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+  } catch (err) {
+    container.innerHTML = `<p style="color: var(--danger);">Network error fetching materials: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function openMaterialModal(id) {
+  try {
+    const res = await fetch(`/api/materials/${id}`);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      showToast(data.error || "Failed to load material.", "danger");
+      return;
+    }
+
+    const item = data.material;
+    currentModalItem = item;
+
+    document.getElementById("modalMaterialTitle").textContent = item.title;
+    document.getElementById("modalMaterialMeta").textContent = `${item.subject} • Saved on ${item.created_at}`;
+
+    const bodyEl = document.getElementById("modalMaterialBody");
+    const copyBtn = document.getElementById("modalCopyBtn");
+    const deleteBtn = document.getElementById("modalDeleteBtn");
+
+    deleteBtn.onclick = () => {
+      closeMaterialModal();
+      deleteItem(item.id);
+    };
+
+    if (item.material_type === "summary" || item.material_type === "explanation") {
+      const text = typeof item.content === "string" ? item.content : JSON.stringify(item.content, null, 2);
+      bodyEl.innerHTML = `<div class="rendered-output">${renderMarkdown(text)}</div>`;
+      copyBtn.onclick = () => copyToClipboard(text, "Copied content!");
+    } else if (item.material_type === "flashcards") {
+      const cards = Array.isArray(item.content) ? item.content : (item.content.flashcards || []);
+      bodyEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          ${cards.map((c, i) => `
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid var(--primary);">
+              <div style="font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem;">Card ${i+1}: ${escapeHtml(c.front)}</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary);">${escapeHtml(c.back)}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      copyBtn.onclick = () => copyToClipboard(JSON.stringify(cards, null, 2), "Copied flashcards JSON!");
+    } else if (item.material_type === "questions") {
+      const qData = item.content;
+      const questions = qData.questions || [];
+      bodyEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          ${questions.map((q, i) => `
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; margin-bottom: 0.5rem;">Q${i+1}: ${escapeHtml(q.question)}</div>
+              ${q.options ? `
+                <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                  ${q.options.map((opt, oIdx) => `<div>${String.fromCharCode(65+oIdx)}. ${escapeHtml(opt)}</div>`).join("")}
+                </div>
+                <div style="font-size: 0.85rem; color: var(--success); font-weight: 600;">Correct: Option ${String.fromCharCode(65 + q.correct_answer)}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(q.explanation || '')}</div>
+              ` : ''}
+              ${q.model_answer ? `<div style="font-size: 0.9rem; color: var(--text-secondary);"><strong>Model Answer:</strong> ${escapeHtml(q.model_answer)}</div>` : ''}
+            </div>
+          `).join("")}
+        </div>
+      `;
+      copyBtn.onclick = () => copyToClipboard(JSON.stringify(qData, null, 2), "Copied questions JSON!");
+    } else {
+      bodyEl.innerHTML = `<pre style="white-space: pre-wrap; font-size: 0.85rem;">${escapeHtml(JSON.stringify(item.content, null, 2))}</pre>`;
+    }
+
+    document.getElementById("materialModal").classList.add("show");
+
+  } catch (err) {
+    showToast("Error opening material details.", "danger");
+  }
+}
+
+function closeMaterialModal() {
+  document.getElementById("materialModal").classList.remove("show");
+  currentModalItem = null;
+}
+
+async function deleteItem(id) {
+  if (!confirm("Are you sure you want to permanently delete this study material from your library?")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/materials/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast("Material deleted successfully.", "success");
+      fetchAndRenderMaterials();
+    } else {
+      showToast(data.error || "Failed to delete item.", "danger");
+    }
+  } catch (err) {
+    showToast("Network error deleting material.", "danger");
+  }
+}
+</script>
+{% endblock %}
