@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}AI Study Assistant — Study Smarter, Not Harder{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <span>✨ Built for Students &bull; Powered by Configurable AI</span>
+    </div>
+    <h1 class="hero-title">
+      Study Smarter, <br><span class="gradient-text">Not Harder.</span>
+    </h1>
+    <p class="hero-subtitle">
+      Transform lengthy textbooks and lecture notes into concise summaries, bilingual concept explanations in English &amp; Telugu, interactive flashcards, and realistic mock exams.
+    </p>
+    <div class="hero-cta-group">
+      <a href="{{ url_for('study') }}" class="btn btn-primary btn-lg">
+        Start Studying Now 🚀
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+        View Dashboard 📊
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Features Grid Section -->
+<section style="padding: 4rem 0; background-color: var(--bg-secondary);">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem;">
+        Everything You Need to Ace Your Exams
+      </h2>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+        From 50-page PDF slides to exam-ready revision packs in seconds.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <!-- Feature 1: Notes Summarizer -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">📄</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">AI Notes Summarizer</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+          Generate short, medium, or detailed revision summaries. Automatically extracts definitions, formulas, and high-yield bulleted takeaways.
+        </p>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Includes Copy &amp; Download &rarr;</span>
+      </div>
+
+      <!-- Feature 2: Bilingual Concept Explainer -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">💡</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Bilingual Concept Explainer</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+          Break down difficult engineering or scientific concepts step-by-step. Supports Beginner, Intermediate, and Advanced depths in English and Telugu (తెలుగు).
+        </p>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">English &amp; Telugu Support &rarr;</span>
+      </div>
+
+      <!-- Feature 3: Practice Questions -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">📝</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Practice Question Generator</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+          Create MCQs with immediate answer rationale, short-answer questions with model solutions, or long-form questions with structured essay outlines.
+        </p>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">MCQs, Short &amp; Long Answers &rarr;</span>
+      </div>
+
+      <!-- Feature 4: Interactive Flashcards -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">🎴</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">3D Revision Flashcards</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+          Strengthen cognitive retention with active recall. Flip cards with smooth 3D animations, track known cards, shuffle decks, and save them locally.
+        </p>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Active Recall &amp; Spaced Repetition &rarr;</span>
+      </div>
+
+      <!-- Feature 5: Timed Mock Examination -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">🎯</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Timed Mock Exam Simulator</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+          Simulate real test pressure with a functioning countdown timer, one-at-a-time navigation, instant percentage scoring, and detailed answer rationale.
+        </p>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Automated Grading &amp; History &rarr;</span>
+      </div>
+
+      <!-- Feature 6: Local Saved Library -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">📚</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Local Material Library</h3>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem;">
+          Save summaries, question sets, flashcard decks, and test history in an embedded SQLite database. Search and filter anytime without requiring an account.
+        </p>
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Zero Cloud Lock-in &rarr;</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section style="padding: 4rem 0;">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem;">How It Works</h2>
+      <p style="color: var(--text-secondary);">Three simple steps to transform passive reading into active revision.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; margin-top: 0.5rem;">Upload or Paste Notes</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Upload your PDF, Word DOCX, TXT, or paste lecture notes directly. Edit and preview the extracted text before running AI generation.
+        </p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; margin-top: 0.5rem;">Choose Your Study Mode</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Select between concise summarization, Telugu/English concept breakdown, practice question generation, flashcards, or a timed mock exam.
+        </p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; margin-top: 0.5rem;">Practice, Save &amp; Excel</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Test yourself with active recall, review rationales for incorrect choices, track your quiz history, and save revision packs for offline study.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefits for Students -->
+<section style="padding: 4rem 0; background-color: var(--bg-secondary);">
+  <div class="container">
+    <div class="grid-2" style="align-items: center;">
+      <div>
+        <h2 style="font-size: 2.25rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.2;">
+          Designed For Real Students,<br>Not Just Hackathon Demos
+        </h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Traditional revision often means passively re-reading slides for hours. AI Study Assistant converts passive reading into high-efficiency active recall and immediate feedback.
+        </p>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;">
+          <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+            <span style="color: var(--success); font-weight: 700;">✓</span>
+            <div><strong>Saves Hours of Manual Summarizing:</strong> Condenses 40-slide lectures into high-yield exam bullet points.</div>
+          </li>
+          <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+            <span style="color: var(--success); font-weight: 700;">✓</span>
+            <div><strong>Telugu Language Support:</strong> Helps vernacular-medium students grasp difficult engineering topics in their mother tongue.</div>
+          </li>
+          <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+            <span style="color: var(--success); font-weight: 700;">✓</span>
+            <div><strong>Active Recall &amp; Instant Feedback:</strong> Immediate rationale for MCQs corrects misunderstandings before exam day.</div>
+          </li>
+          <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+            <span style="color: var(--success); font-weight: 700;">✓</span>
+            <div><strong>No Mandatory Login:</strong> Start learning immediately with zero subscription friction.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div style="background: var(--bg-tertiary); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">
+          🛡️ Privacy &amp; Data Transparency
+        </h3>
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Your study notes and mock exam results are saved securely in a local SQLite database on your device.
+        </p>
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          When an AI provider is configured (Google Gemini or OpenAI), the extracted text from your notes is transmitted securely to the AI API solely to generate your requested study materials.
+        </p>
+        <div style="background: var(--card-bg); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--accent); font-size: 0.85rem;">
+          <strong>No Cloud Lock-in:</strong> You can delete any saved material from your library at any time with a single click.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bottom CTA -->
+<section style="padding: 4rem 0; text-align: center;">
+  <div class="container">
+    <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem;">
+      Ready to Supercharge Your Exam Preparation?
+    </h2>
+    <p style="color: var(--text-secondary); max-width: 540px; margin: 0 auto 2rem;">
+      Upload your study notes right now and generate your first revision pack in under 30 seconds.
+    </p>
+    <a href="{{ url_for('study') }}" class="btn btn-primary btn-lg">
+      Launch Study Workspace 🚀
+    </a>
+  </div>
+</section>
+{% endblock %}
