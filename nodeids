@@ -1,0 +1,23 @@
+[
+  "tests/test_app.py::test_explain_concept_english",
+  "tests/test_app.py::test_explain_concept_telugu",
+  "tests/test_app.py::test_flashcards_generation",
+  "tests/test_app.py::test_health_endpoint",
+  "tests/test_app.py::test_mock_test_generation",
+  "tests/test_app.py::test_pages_render_successfully",
+  "tests/test_app.py::test_practice_questions_long",
+  "tests/test_app.py::test_practice_questions_mcq",
+  "tests/test_app.py::test_practice_questions_short",
+  "tests/test_app.py::test_quiz_results_and_stats",
+  "tests/test_app.py::test_saved_materials_crud",
+  "tests/test_app.py::test_summarize_empty_notes",
+  "tests/test_app.py::test_summarize_notes_endpoint",
+  "tests/test_app.py::test_upload_empty_request",
+  "tests/test_app.py::test_upload_valid_text_file",
+  "tests/test_file_processor.py::test_allowed_file",
+  "tests/test_file_processor.py::test_empty_txt_file",
+  "tests/test_file_processor.py::test_extract_text_from_txt",
+  "tests/test_file_processor.py::test_process_docx_file",
+  "tests/test_file_processor.py::test_process_pdf_file",
+  "tests/test_file_processor.py::test_unsupported_file_upload"
+]

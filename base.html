@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AI Study Assistant — Your Personal AI Learning Partner{% endblock %}</title>
+  <meta name="description" content="AI-powered study assistant for summarizing notes, explaining concepts in English and Telugu, generating MCQs, flashcards, and mock tests.">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top AI Status Banner (if Demo Mode) -->
+  {% if ai_status.is_demo %}
+  <div class="disclaimer-banner">
+    <span>ℹ️ <strong>Demo Mode Active:</strong> No external AI API key configured in <code>.env</code>. The application is serving realistic sample study materials. Add your <code>GEMINI_API_KEY</code> or <code>OPENAI_API_KEY</code> to enable live AI responses.</span>
+  </div>
+  {% endif %}
+
+  <!-- Main Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="{{ url_for('index') }}" class="nav-brand">
+        <div class="brand-icon">🎓</div>
+        <span>AI Study Assistant</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a></li>
+        <li><a href="{{ url_for('study') }}" class="nav-link {% if request.path == '/study' %}active{% endif %}">Study Workspace</a></li>
+        <li><a href="{{ url_for('saved_materials') }}" class="nav-link {% if request.path == '/saved' %}active{% endif %}">Saved Materials</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- AI Engine Status Pill -->
+        <div class="status-pill" title="AI Engine Status">
+          <span class="status-indicator {% if not ai_status.is_demo %}status-online{% else %}status-demo{% endif %}"></span>
+          <span>{{ ai_status.active_model }}</span>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+
+        <!-- CTA Button -->
+        <a href="{{ url_for('study') }}" class="btn btn-primary btn-sm" style="display: none; @media(min-width: 680px){display: inline-flex;}">
+          Start Studying 🚀
+        </a>
+
+        <!-- Mobile Hamburger -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open Navigation Menu">
+          ☰
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Block -->
+  <main style="flex: 1;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>
+        <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+          AI Study Assistant — Your Personal AI Learning Partner
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+          Designed for students to summarize notes, master difficult concepts, practice active recall, and ace exams.
+        </div>
+      </div>
+      <div style="font-size: 0.85rem; text-align: right;">
+        <div>Local SQLite Storage &bull; Configurable AI Backend &bull; Privacy-First</div>
+        <div style="margin-top: 0.25rem; color: var(--text-muted);">Note: Uploaded study text is processed only to generate your requested learning materials.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Alert Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

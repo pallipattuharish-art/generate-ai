@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — AI Study Assistant{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+
+  <!-- Welcome Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem;">
+        Welcome to your Study Dashboard 👋
+      </h1>
+      <p style="color: var(--text-secondary);">
+        Track your study materials, review past mock tests, and launch revision tools.
+      </p>
+    </div>
+    <a href="{{ url_for('study') }}" class="btn btn-primary">
+      Open Study Workspace ✏️
+    </a>
+  </div>
+
+  <!-- Real Metrics & Study Progress Grid -->
+  <div class="grid-4" style="margin-bottom: 2.5rem;">
+    <div class="card">
+      <div style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">
+        Saved Study Materials
+      </div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0;">
+        {{ stats.total_materials }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        Stored locally in SQLite database
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">
+        Summaries &amp; Explanations
+      </div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: var(--secondary); margin: 0.5rem 0;">
+        {{ (stats.type_counts.get('summary', 0)) + (stats.type_counts.get('explanation', 0)) }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        {{ stats.type_counts.get('summary', 0) }} Summaries &bull; {{ stats.type_counts.get('explanation', 0) }} Explanations
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">
+        Flashcard Decks &amp; Question Sets
+      </div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: var(--accent); margin: 0.5rem 0;">
+        {{ (stats.type_counts.get('flashcards', 0)) + (stats.type_counts.get('questions', 0)) }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        {{ stats.type_counts.get('flashcards', 0) }} Decks &bull; {{ stats.type_counts.get('questions', 0) }} Question sets
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">
+        Mock Exams Completed
+      </div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: var(--success); margin: 0.5rem 0;">
+        {{ stats.total_quizzes }}
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        Average score: <strong>{{ stats.avg_score }}%</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study Tools Launcher Section -->
+  <div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.25rem;">
+      Quick Tool Launcher
+    </h2>
+    <div class="grid-3">
+      <a href="{{ url_for('study') }}#summarizer" class="card" style="text-decoration: none; color: inherit;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">Notes Summarizer</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          Generate short, medium, or detailed exam summaries with formulas and key definitions.
+        </div>
+      </a>
+
+      <a href="{{ url_for('study') }}#explainer" class="card" style="text-decoration: none; color: inherit;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💡</div>
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">Concept Explainer</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          Step-by-step breakdown in English or Telugu with real-life analogies and self-tests.
+        </div>
+      </a>
+
+      <a href="{{ url_for('study') }}#questions" class="card" style="text-decoration: none; color: inherit;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📝</div>
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">Practice Questions</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          Generate multiple-choice, short-answer, or analytical long-answer questions.
+        </div>
+      </a>
+
+      <a href="{{ url_for('study') }}#flashcards" class="card" style="text-decoration: none; color: inherit;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎴</div>
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">Interactive Flashcards</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          Active recall deck with 3D flip card animations, progress tracking, and shuffle.
+        </div>
+      </a>
+
+      <a href="{{ url_for('study') }}#mocktest" class="card" style="text-decoration: none; color: inherit;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">Timed Mock Exam</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          Timed test with automated grading, timer countdown, and full answer rationales.
+        </div>
+      </a>
+
+      <a href="{{ url_for('saved_materials') }}" class="card" style="text-decoration: none; color: inherit;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">Saved Library</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+          Browse, inspect, and export your saved study packs and mock test scores.
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Mock Exam Results Section -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>🏆 Recent Mock Exam History</span>
+      </div>
+      <a href="{{ url_for('study') }}#mocktest" class="btn btn-outline btn-sm">Take New Exam</a>
+    </div>
+
+    <div id="dashboardQuizList">
+      <p style="color: var(--text-secondary); font-size: 0.9rem;" id="quizListEmptyMsg">
+        Loading exam history...
+      </p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const container = document.getElementById("dashboardQuizList");
+  try {
+    const res = await fetch("/api/quiz-results?limit=5");
+    const data = await res.json();
+    if (!res.ok || !data.success || !data.results.length) {
+      container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No mock exam results recorded yet. Head over to the <a href="/study#mocktest">Study Workspace</a> to take your first test!</p>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-secondary);">
+              <th style="padding: 0.75rem 0.5rem;">Test Title</th>
+              <th style="padding: 0.75rem 0.5rem;">Subject</th>
+              <th style="padding: 0.75rem 0.5rem;">Score</th>
+              <th style="padding: 0.75rem 0.5rem;">Percentage</th>
+              <th style="padding: 0.75rem 0.5rem;">Time Spent</th>
+              <th style="padding: 0.75rem 0.5rem;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.results.map(r => `
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 0.75rem 0.5rem; font-weight: 600;">${escapeHtml(r.title)}</td>
+                <td style="padding: 0.75rem 0.5rem; color: var(--text-secondary);">${escapeHtml(r.subject)}</td>
+                <td style="padding: 0.75rem 0.5rem;">${r.score} / ${r.total_questions}</td>
+                <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: ${r.percentage >= 70 ? 'var(--success)' : r.percentage >= 50 ? 'var(--warning)' : 'var(--danger)'};">${r.percentage}%</td>
+                <td style="padding: 0.75rem 0.5rem; color: var(--text-muted);">${Math.floor(r.time_spent_seconds / 60)}m ${r.time_spent_seconds % 60}s</td>
+                <td style="padding: 0.75rem 0.5rem; color: var(--text-muted); font-size: 0.8rem;">${r.created_at}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = '<p style="color: var(--danger);">Failed to load exam history.</p>';
+  }
+});
+</script>
+{% endblock %}
